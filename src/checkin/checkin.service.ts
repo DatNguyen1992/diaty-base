@@ -21,12 +21,12 @@ export class CheckInService {
 
   /** Create a new check‑in record */
   async checkIn(dto: CheckInDto): Promise<CheckInRecord> {
-    const item: CheckInRecord = {
-      id: randomUUID(),
-      userId: dto.userId,
-      storeId: dto.storeId,
-      timestamp: new Date().toISOString(),
-    };
+const item: CheckInRecord = {
+  id: randomUUID(),
+  user_id: dto.user_id,
+  store_id: dto.store_id,
+  timestamp: new Date().toISOString(),
+};
     await this.dynamoRepository.send(
       new PutCommand({ TableName: this.tableName, Item: item }),
     );
@@ -92,13 +92,13 @@ export class CheckInService {
     );
     const records = (result.Items ?? []) as CheckInRecord[];
 
-    const { userId, storeId, from, to } = filter;
+    const { user_id, store_id, from, to } = filter;
     const fromDate = from ? new Date(from) : undefined;
     const toDate = to ? new Date(to) : undefined;
 
     return records.filter(rec => {
-      if (userId && rec.userId !== userId) return false;
-      if (storeId && rec.storeId !== storeId) return false;
+if (user_id && rec.user_id !== user_id) return false;
+if (store_id && rec.store_id !== store_id) return false;
       const recDate = new Date(rec.timestamp);
       if (fromDate && recDate < fromDate) return false;
       if (toDate && recDate > toDate) return false;

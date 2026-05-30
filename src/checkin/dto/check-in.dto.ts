@@ -5,13 +5,13 @@ import { IsString, IsNotEmpty } from 'class-validator';
  * DTO used when a user checks into a store.
  */
 export class CheckInDto {
-  @ApiProperty({ description: 'Identifier of the user performing the check‑in' })
+  @ApiProperty({ name: 'user_id', description: 'Identifier of the user performing the check‑in' })
   @IsString()
   @IsNotEmpty()
-  readonly userId: string;
+  readonly user_id: string;
 
-  @ApiProperty({ description: 'Identifier of the store where the user checks in' })
+  @ApiProperty({ name: 'store_id', description: 'Identifier of the store where the user checks in' })
   @IsString()
   @IsNotEmpty()
-  readonly storeId: string;
+  readonly store_id: string;
 }

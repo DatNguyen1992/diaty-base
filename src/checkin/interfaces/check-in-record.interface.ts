@@ -1,6 +1,6 @@
 export interface CheckInRecord {
   id?: string;
-  userId: string;
-  storeId: string;
+  user_id: string;
+  store_id: string;
   timestamp: Date | string;
 }

@@ -12,7 +12,7 @@ import {
 import { STORE_TABLE_NAME } from '../../../dynamo/constants';
 import { CreateStoreDto } from '../../dto/create-store.dto';
 import { UpdateStoreDto } from '../../dto/update-store.dto';
-import { Store } from '../../interfaces/store.interface';
+import { Store } from '../../domain/entities/store.entity';
 
 @Injectable()
 export class DynamoStoreRepository implements StoreRepository {

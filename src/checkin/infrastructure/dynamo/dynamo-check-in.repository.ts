@@ -12,7 +12,7 @@ import {
 import { CHECK_IN_TABLE_NAME } from '../../../dynamo/constants';
 import { CheckInDto } from '../../dto/check-in.dto';
 import { CheckInFilterDto } from '../../dto/check-in-filter.dto';
-import { CheckInRecord } from '../../interfaces/check-in-record.interface';
+import { CheckIn } from '../../domain/entities/check-in.entity';
 
 @Injectable()
 export class DynamoCheckInRepository implements CheckInRepository {
@@ -20,8 +20,8 @@ export class DynamoCheckInRepository implements CheckInRepository {
 
   constructor(private readonly dynamoRepository: DynamoRepository) {}
 
-  async checkIn(dto: CheckInDto): Promise<CheckInRecord> {
-    const item: CheckInRecord = {
+  async checkIn(dto: CheckInDto): Promise<CheckIn> {
+    const item: CheckIn = {
       id: randomUUID(),
       user_id: dto.user_id,
       store_id: dto.store_id,
@@ -33,18 +33,18 @@ export class DynamoCheckInRepository implements CheckInRepository {
     return item;
   }
 
-  async findOne(id: string): Promise<CheckInRecord | undefined> {
+  async findOne(id: string): Promise<CheckIn | undefined> {
     const result = await this.dynamoRepository.send(
       new GetCommand({ TableName: this.tableName, Key: { id } }),
     );
-    return result.Item as CheckInRecord;
+    return result.Item as CheckIn;
   }
 
-  async getLogs(filter: CheckInFilterDto): Promise<CheckInRecord[]> {
+  async getLogs(filter: CheckInFilterDto): Promise<CheckIn[]> {
     const result = await this.dynamoRepository.send(
       new ScanCommand({ TableName: this.tableName }),
     );
-    const records = (result.Items ?? []) as CheckInRecord[];
+    const records = (result.Items ?? []) as CheckIn[];
 
     const { user_id, store_id, from, to } = filter;
     const fromDate = from ? new Date(from) : undefined;
@@ -60,7 +60,7 @@ export class DynamoCheckInRepository implements CheckInRepository {
     });
   }
 
-  async update(id: string, dto: Partial<CheckInDto>): Promise<CheckInRecord | undefined> {
+  async update(id: string, dto: Partial<CheckInDto>): Promise<CheckIn | undefined> {
     const keys = Object.keys(dto);
     if (keys.length === 0) {
       return this.findOne(id);

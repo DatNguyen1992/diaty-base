@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { StoreRepository } from '../../domain/repositories/store.repository';
 import { STORE_REPOSITORY_TOKEN } from '../../domain/repositories/store.repository';
-import type { Store } from '../../interfaces/store.interface';
+import { Store } from '../../domain/entities/store.entity';
 
 @Injectable()
 export class GetStoreUseCase {

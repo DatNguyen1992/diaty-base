@@ -43,7 +43,7 @@ async function bootstrap() {
     ],
   });
 
-  SwaggerModule.setup('api-docs', app, document);
+  SwaggerModule.setup('api', app, document);
 
   app.useGlobalPipes(new ValidationPipe());
 

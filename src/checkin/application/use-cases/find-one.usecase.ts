@@ -1,0 +1,12 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { CheckInRepository, CHECK_IN_REPOSITORY_TOKEN } from '../../domain/repositories/check-in.repository';
+import type { CheckInRecord } from '../../interfaces/check-in-record.interface';
+
+@Injectable()
+export class FindOneUseCase {
+  constructor(@Inject(CHECK_IN_REPOSITORY_TOKEN) private readonly repo: CheckInRepository) {}
+
+  async execute(id: string): Promise<CheckInRecord | undefined> {
+    return this.repo.findOne(id);
+  }
+}

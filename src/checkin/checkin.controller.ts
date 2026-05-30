@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { CheckInService } from './checkin.service';
+import { CheckInUseCase } from './application/use-cases/check-in.usecase';
+import { GetLogsUseCase } from './application/use-cases/get-logs.usecase';
 import { CheckInDto } from './dto/check-in.dto';
 import { CheckInFilterDto } from './dto/check-in-filter.dto';
 import { PaginationDto } from '../common/pagination/pagination.dto';
@@ -11,14 +12,15 @@ import { PaginationService } from '../common/pagination/pagination.service';
 @Controller('checkins')
 export class CheckInController {
   constructor(
-    private readonly checkInService: CheckInService,
+    private readonly checkInUseCase: CheckInUseCase,
+    private readonly getLogsUseCase: GetLogsUseCase,
     private readonly paginationService: PaginationService,
   ) {}
 
   @Post()
   @ApiOperation({ summary: 'Record a user check-in at a store' })
   async checkIn(@Body() payload: CheckInDto) {
-    return this.checkInService.checkIn(payload);
+    return this.checkInUseCase.execute(payload);
   }
 
   @Get('logs')
@@ -28,7 +30,7 @@ export class CheckInController {
     @Query() pagination: PaginationDto,
   ) {
     // Fetch logs based on filters
-    const logs = await this.checkInService.getLogs(filter);
+    const logs = await this.getLogsUseCase.execute(filter);
     
     // Parse pagination parameters (fallback if global transform is disabled)
     const page = pagination.page ? Number(pagination.page) : 1;

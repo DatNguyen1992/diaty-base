@@ -33,7 +33,7 @@ export class StoreController {
   async findAll(@Query() pagination: PaginationDto) {
     const list = await this.listStoresUseCase.execute();
     const page = pagination.page ? Number(pagination.page) : 1;
-    const pageSize = pagination.pageSize ? Number(pagination.pageSize) : 10;
+    const pageSize = pagination.page_size ? Number(pagination.page_size) : 10;
     return this.paginationService.paginate(list, page, pageSize);
   }
 

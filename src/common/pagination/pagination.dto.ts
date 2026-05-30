@@ -5,7 +5,7 @@ import { Type } from 'class-transformer';
 /**
  * DTO for pagination parameters.
  * - `page`: starts from 1.
- * - `pageSize`: number of items per page.
+ * - `page_size`: number of items per page.
  */
 export class PaginationDto {
   @ApiProperty({
@@ -29,5 +29,5 @@ export class PaginationDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  readonly pageSize: number = 10;
+  readonly page_size: number = 10;
 }

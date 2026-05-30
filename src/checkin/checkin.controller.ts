@@ -34,7 +34,7 @@ export class CheckInController {
     
     // Parse pagination parameters (fallback if global transform is disabled)
     const page = pagination.page ? Number(pagination.page) : 1;
-    const pageSize = pagination.pageSize ? Number(pagination.pageSize) : 10;
+    const pageSize = pagination.page_size ? Number(pagination.page_size) : 10;
 
     // Apply pagination utility
     return this.paginationService.paginate(logs, page, pageSize);

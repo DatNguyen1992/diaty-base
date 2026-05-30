@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './user.controller';
+ 
 import { DynamoModule } from '../dynamo/dynamo.module';
 import { DynamoUserRepository } from './infrastructure/dynamo/dynamo-user.repository';
 import { USER_REPOSITORY_TOKEN } from './domain/repositories/user.repository';

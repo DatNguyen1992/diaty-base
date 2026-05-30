@@ -7,6 +7,9 @@ import configuration from './config/configuration';
 import { DynamoModule } from './dynamo/dynamo.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { CheckInModule } from './checkin/checkin.module';
+import { PaginationModule } from './common/pagination/pagination.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { AuthModule } from './auth/auth.module';
     DynamoModule,
     UserModule,
     AuthModule,
+    CheckInModule,
+    PaginationModule,
+    StoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

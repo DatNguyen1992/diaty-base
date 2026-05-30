@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { ConfigService } from '@nestjs/config';
-import { USER_TABLE_NAME } from './constants';
+import { USER_TABLE_NAME, CHECK_IN_TABLE_NAME, STORE_TABLE_NAME } from './constants';
 
 @Injectable()
 export class DynamoDBService implements OnModuleInit {
@@ -34,30 +34,34 @@ export class DynamoDBService implements OnModuleInit {
 
     this.docClient = DynamoDBDocumentClient.from(this.client);
 
-    await this.ensureTableExists();
+    await this.ensureTablesExist();
   }
 
-  private async ensureTableExists() {
-    const tableName = USER_TABLE_NAME;
-    try {
-      await this.client.send(
-        new DescribeTableCommand({ TableName: tableName }),
-      );
-    } catch (err: any) {
-      if (
-        err.name === 'ResourceNotFoundException' ||
-        err.$metadata?.httpStatusCode === 404
-      ) {
+  private async ensureTablesExist() {
+    const tables = [USER_TABLE_NAME, CHECK_IN_TABLE_NAME, STORE_TABLE_NAME];
+    
+    for (const tableName of tables) {
+      try {
         await this.client.send(
-          new CreateTableCommand({
-            TableName: tableName,
-            AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
-            KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
-            BillingMode: 'PAY_PER_REQUEST',
-          }),
+          new DescribeTableCommand({ TableName: tableName }),
         );
-      } else {
-        throw err;
+      } catch (err: any) {
+        if (
+          err.name === 'ResourceNotFoundException' ||
+          err.$metadata?.httpStatusCode === 404
+        ) {
+          // Default schema with 'id' as Partition Key for auto-provisioning
+          await this.client.send(
+            new CreateTableCommand({
+              TableName: tableName,
+              AttributeDefinitions: [{ AttributeName: 'id', AttributeType: 'S' }],
+              KeySchema: [{ AttributeName: 'id', KeyType: 'HASH' }],
+              BillingMode: 'PAY_PER_REQUEST',
+            }),
+          );
+        } else {
+          throw err;
+        }
       }
     }
   }

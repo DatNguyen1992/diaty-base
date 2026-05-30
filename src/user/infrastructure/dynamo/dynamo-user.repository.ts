@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamoDBService } from '../../../dynamo/dynamo.service';
+import { DynamoRepository } from '../../../dynamo/dynamo.repository';
 import { User } from '../../domain/entities/user.entity';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import {
@@ -16,41 +16,41 @@ import { USER_TABLE_NAME } from '../../../dynamo/constants';
 export class DynamoUserRepository implements UserRepository {
   private readonly tableName = USER_TABLE_NAME;
 
-  constructor(private readonly dynamoDBService: DynamoDBService) {}
+  constructor(private readonly dynamoRepository: DynamoRepository) {}
 
   async create(user: User): Promise<User> {
     const item = { ...user, id: user.id ?? randomUUID() };
-    await this.dynamoDBService
-      .getDocClient()
-      .send(new PutCommand({ TableName: this.tableName, Item: item }));
+    await this.dynamoRepository.send(
+      new PutCommand({ TableName: this.tableName, Item: item })
+    );
     return item;
   }
 
   async findById(id: string): Promise<User | null> {
-    const result = await this.dynamoDBService
-      .getDocClient()
-      .send(new GetCommand({ TableName: this.tableName, Key: { id } }));
+    const result = await this.dynamoRepository.send(
+      new GetCommand({ TableName: this.tableName, Key: { id } })
+    );
     return (result.Item as User) ?? null;
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const result = await this.dynamoDBService.getDocClient().send(
+    const result = await this.dynamoRepository.send(
       new ScanCommand({
         TableName: this.tableName,
         FilterExpression: 'email = :email',
         ExpressionAttributeValues: { ':email': email },
-      }),
+      })
     );
     return (result.Items?.[0] as User) ?? null;
   }
 
   async findByPhone(phone: string): Promise<User | null> {
-    const result = await this.dynamoDBService.getDocClient().send(
+    const result = await this.dynamoRepository.send(
       new ScanCommand({
         TableName: this.tableName,
         FilterExpression: 'phone_number = :phone',
         ExpressionAttributeValues: { ':phone': phone },
-      }),
+      })
     );
     return (result.Items?.[0] as User) ?? null;
   }
@@ -72,7 +72,7 @@ export class DynamoUserRepository implements UserRepository {
       expressionAttributeValues[`:v${i}`] = (user as any)[key];
     });
 
-    await this.dynamoDBService.getDocClient().send(
+    await this.dynamoRepository.send(
       new UpdateCommand({
         TableName: this.tableName,
         Key: { id },
@@ -80,15 +80,15 @@ export class DynamoUserRepository implements UserRepository {
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
         ReturnValues: 'ALL_NEW',
-      }),
+      })
     );
 
     return (await this.findById(id)) as User;
   }
 
   async delete(id: string): Promise<void> {
-    await this.dynamoDBService
-      .getDocClient()
-      .send(new DeleteCommand({ TableName: this.tableName, Key: { id } }));
+    await this.dynamoRepository.send(
+      new DeleteCommand({ TableName: this.tableName, Key: { id } })
+    );
   }
 }

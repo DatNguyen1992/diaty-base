@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateStoreUseCase } from './application/use-cases/create-store.usecase';
 import { ListStoresUseCase } from './application/use-cases/list-stores.usecase';
 import { GetStoreUseCase } from './application/use-cases/get-store.usecase';
@@ -11,6 +11,7 @@ import { PaginationDto } from '../common/pagination/pagination.dto';
 import { PaginationService } from '../common/pagination/pagination.service';
 
 @ApiTags('Stores')
+@ApiBearerAuth()
 @Controller('stores')
 export class StoreController {
   constructor(

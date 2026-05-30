@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
@@ -30,7 +35,8 @@ export class AuthService {
 
     if (phone_number) {
       const existingUser = await this.userRepository.findByPhone(phone_number);
-      if (existingUser) throw new BadRequestException('Phone number already exists');
+      if (existingUser)
+        throw new BadRequestException('Phone number already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -84,7 +90,12 @@ export class AuthService {
       const payload = this.jwtService.verify(refresh_token, {
         secret: process.env.JWT_REFRESH_SECRET || 'refreshSecretKey',
       });
-      const user = { id: payload.sub, email: payload.email, phone_number: payload.phone_number, role: payload.role };
+      const user = {
+        id: payload.sub,
+        email: payload.email,
+        phone_number: payload.phone_number,
+        role: payload.role,
+      };
       return this.generateTokens(user as any);
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
@@ -92,8 +103,13 @@ export class AuthService {
   }
 
   private generateTokens(user: User) {
-    const payload = { sub: user.id, email: user.email, phone_number: user.phone_number, role: user.role };
-    
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      phone_number: user.phone_number,
+      role: user.role,
+    };
+
     return {
       message: 'Success',
       access_token: this.jwtService.sign(payload, {

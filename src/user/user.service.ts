@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DynamoDBService } from '../dynamo/dynamo.service';
-import { PutCommand, GetCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  PutCommand,
+  GetCommand,
+  UpdateCommand,
+  DeleteCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { randomUUID } from 'crypto';
 import { USER_TABLE_NAME } from '../dynamo/constants';
 
@@ -12,12 +17,16 @@ export class UserService {
 
   async create(dto: any) {
     const item = { id: randomUUID(), ...dto };
-    await this.dynamoDBService.getDocClient().send(new PutCommand({ TableName: this.tableName, Item: item }));
+    await this.dynamoDBService
+      .getDocClient()
+      .send(new PutCommand({ TableName: this.tableName, Item: item }));
     return item;
   }
 
   async findOne(id: string) {
-    const result = await this.dynamoDBService.getDocClient().send(new GetCommand({ TableName: this.tableName, Key: { id } }));
+    const result = await this.dynamoDBService
+      .getDocClient()
+      .send(new GetCommand({ TableName: this.tableName, Key: { id } }));
     return result.Item;
   }
 
@@ -27,7 +36,9 @@ export class UserService {
       return this.findOne(id);
     }
 
-    const updateExpressions = keys.map((key, i) => `#k${i} = :v${i}`).join(', ');
+    const updateExpressions = keys
+      .map((key, i) => `#k${i} = :v${i}`)
+      .join(', ');
     const expressionAttributeNames: Record<string, string> = {};
     const expressionAttributeValues: Record<string, any> = {};
 
@@ -45,13 +56,15 @@ export class UserService {
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
         ReturnValues: 'ALL_NEW',
-      })
+      }),
     );
     return this.findOne(id);
   }
 
   async remove(id: string) {
-    await this.dynamoDBService.getDocClient().send(new DeleteCommand({ TableName: this.tableName, Key: { id } }));
+    await this.dynamoDBService
+      .getDocClient()
+      .send(new DeleteCommand({ TableName: this.tableName, Key: { id } }));
     return { deleted: true };
   }
 }

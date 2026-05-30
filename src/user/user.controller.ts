@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Post, Body, Put, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  Put,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateUserUseCase } from './application/use-cases/create-user.usecase';
 import { GetUserUseCase } from './application/use-cases/get-user.usecase';
 import { UpdateUserUseCase } from './application/use-cases/update-user.usecase';

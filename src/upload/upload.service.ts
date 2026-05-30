@@ -21,7 +21,10 @@ export class UploadService {
             resource_type: 'image',
             format: 'webp',
           },
-          (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+          (
+            error: UploadApiErrorResponse | undefined,
+            result: UploadApiResponse | undefined,
+          ) => {
             if (error) {
               return reject(error);
             }

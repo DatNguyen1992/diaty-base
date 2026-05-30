@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CheckInRepository, CHECK_IN_REPOSITORY_TOKEN } from '../../domain/repositories/check-in.repository';
+import type { CheckInRepository } from '../../domain/repositories/check-in.repository';
+import { CHECK_IN_REPOSITORY_TOKEN } from '../../domain/repositories/check-in.repository';
 
 @Injectable()
 export class DeleteCheckInUseCase {

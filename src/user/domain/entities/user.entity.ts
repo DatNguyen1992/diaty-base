@@ -29,6 +29,8 @@ export class User {
   bonus_pending?: number;
   bonus_received?: number;
   avatar?: string;
+  forgot_password_otp?: string;
+  forgot_password_otp_expires_at?: string;
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);

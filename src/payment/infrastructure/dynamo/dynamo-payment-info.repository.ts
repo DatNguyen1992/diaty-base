@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DynamoRepository } from '../../../dynamo/dynamo.repository';
 import { PaymentInfo } from '../../domain/entities/payment-info.entity';
 import { PaymentInfoRepository } from '../../domain/repositories/payment-info.repository';
-import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { GetCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { PAYMENT_INFO_TABLE_NAME } from '../../../dynamo/constants';
 
 @Injectable()
@@ -56,5 +56,11 @@ export class DynamoPaymentInfoRepository implements PaymentInfoRepository {
     );
 
     return (await this.getByUserId(userId)) as PaymentInfo;
+  }
+
+  async delete(userId: string): Promise<void> {
+    await this.dynamoRepository.send(
+      new DeleteCommand({ TableName: this.tableName, Key: { id: userId } }),
+    );
   }
 }

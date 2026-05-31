@@ -11,6 +11,9 @@ import * as nodemailer from 'nodemailer';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { USER_REPOSITORY_TOKEN } from '../user/domain/repositories/user.repository';
 import type { UserRepository } from '../user/domain/repositories/user.repository';
 import { User } from '../user/domain/entities/user.entity';
@@ -147,6 +150,113 @@ export class AuthService {
     }
   }
 
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const { email, phone_number } = forgotPasswordDto;
+    
+    if (!email && !phone_number) {
+      throw new BadRequestException('Email or phone number is required');
+    }
+
+    let user: User | null = null;
+    if (email) {
+      user = await this.userRepository.findByEmail(email);
+    } else if (phone_number) {
+      user = await this.userRepository.findByPhone(phone_number);
+    }
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.email) {
+      throw new BadRequestException('User does not have a registered email address');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+    await this.userRepository.update(user.id, {
+      forgot_password_otp: otp,
+      forgot_password_otp_expires_at: expiresAt,
+    });
+
+    await this.sendOtpEmail(user.email, otp);
+
+    return { message: 'OTP sent to your email successfully' };
+  }
+
+  async verifyForgotPasswordOtp(verifyOtpDto: VerifyOtpDto) {
+    const { email, phone_number, otp } = verifyOtpDto;
+
+    if (!email && !phone_number) {
+      throw new BadRequestException('Email or phone number is required');
+    }
+
+    let user: User | null = null;
+    if (email) {
+      user = await this.userRepository.findByEmail(email);
+    } else if (phone_number) {
+      user = await this.userRepository.findByPhone(phone_number);
+    }
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.forgot_password_otp || user.forgot_password_otp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (
+      !user.forgot_password_otp_expires_at ||
+      new Date(user.forgot_password_otp_expires_at) < new Date()
+    ) {
+      throw new BadRequestException('Expired OTP');
+    }
+
+    return { message: 'OTP verified successfully' };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { email, phone_number, otp, new_password } = resetPasswordDto;
+
+    if (!email && !phone_number) {
+      throw new BadRequestException('Email or phone number is required');
+    }
+
+    let user: User | null = null;
+    if (email) {
+      user = await this.userRepository.findByEmail(email);
+    } else if (phone_number) {
+      user = await this.userRepository.findByPhone(phone_number);
+    }
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.forgot_password_otp || user.forgot_password_otp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (
+      !user.forgot_password_otp_expires_at ||
+      new Date(user.forgot_password_otp_expires_at) < new Date()
+    ) {
+      throw new BadRequestException('Expired OTP');
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    await this.userRepository.update(user.id, {
+      password: hashedPassword,
+      forgot_password_otp: '',
+      forgot_password_otp_expires_at: '',
+    });
+
+    return { message: 'Password reset successfully' };
+  }
+
   private async sendVerificationEmail(email: string, verificationUrl: string) {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.ethereal.email',
@@ -158,11 +268,30 @@ export class AuthService {
     });
 
     await transporter.sendMail({
-      from: '"Diaty Base" <noreply@diaty.com>',
+      from: '"TripleDevs Studio" <noreply@tripledevstudio.com>',
       to: email,
       subject: 'Verify your account',
       html: `<p>Please click the button below to verify your account:</p>
              <a href="${verificationUrl}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>`,
+    });
+  }
+
+  private async sendOtpEmail(email: string, otp: string) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"TripleDevs Studio" <noreply@tripledevstudio.com>',
+      to: email,
+      subject: 'Reset your password',
+      html: `<p>Your 6-digit OTP to reset password is: <strong>${otp}</strong></p>
+             <p>This code will expire in 5 minutes.</p>`,
     });
   }
 

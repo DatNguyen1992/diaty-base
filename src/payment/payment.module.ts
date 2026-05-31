@@ -14,6 +14,6 @@ import { UpdatePaymentInfoUseCase } from './application/use-cases/update-payment
     UpdatePaymentInfoUseCase,
   ],
   controllers: [PaymentController],
-  exports: [PAYMENT_INFO_REPOSITORY_TOKEN],
+  exports: [PAYMENT_INFO_REPOSITORY_TOKEN, GetPaymentInfoUseCase],
 })
 export class PaymentModule {}

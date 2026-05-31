@@ -2,10 +2,12 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
   Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as nodemailer from 'nodemailer';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -41,16 +43,44 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate unique default ref_code: REF- and 8 random digits
+    let refCode = '';
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 20) {
+      const randomNum = Math.floor(10000000 + Math.random() * 90000000);
+      refCode = `REF-${randomNum}`;
+      const existingUser = await this.userRepository.findByRefCode(refCode);
+      if (!existingUser) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    if (!isUnique) {
+      throw new BadRequestException('Could not generate a unique referral code. Please try again.');
+    }
+
     const user = new User({
       ...rest,
       email,
       phone_number,
       password: hashedPassword,
+      ref_code: refCode,
     });
 
     const createdUser = await this.userRepository.create(user);
 
-    return this.generateTokens(createdUser);
+    if (createdUser.email) {
+      const verificationToken = this.jwtService.sign(
+        { sub: createdUser.id },
+        { secret: process.env.JWT_VERIFY_SECRET || 'verifySecret', expiresIn: '1d' },
+      );
+      const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/auth/verify/${verificationToken}`;
+      await this.sendVerificationEmail(createdUser.email, verificationUrl);
+    }
+
+    return { message: 'User registered successfully. Please check your email to verify.' };
   }
 
   async login(loginDto: LoginDto) {
@@ -100,6 +130,40 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async verifyEmail(token: string) {
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: process.env.JWT_VERIFY_SECRET || 'verifySecret',
+      });
+      const user = await this.userRepository.findById(payload.sub);
+      if (!user) throw new NotFoundException('User not found');
+      
+      await this.userRepository.update(user.id, { is_verify: true });
+      return { message: 'Email verified successfully' };
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+  }
+
+  private async sendVerificationEmail(email: string, verificationUrl: string) {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"Diaty Base" <noreply@diaty.com>',
+      to: email,
+      subject: 'Verify your account',
+      html: `<p>Please click the button below to verify your account:</p>
+             <a href="${verificationUrl}" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>`,
+    });
   }
 
   private generateTokens(user: User) {

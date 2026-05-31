@@ -76,7 +76,7 @@ export class AuthService {
         { sub: createdUser.id },
         { secret: process.env.JWT_VERIFY_SECRET || 'verifySecret', expiresIn: '1d' },
       );
-      const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/auth/verify/${verificationToken}`;
+      const verificationUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/v1/auth/verify/${verificationToken}`;
       await this.sendVerificationEmail(createdUser.email, verificationUrl);
     }
 

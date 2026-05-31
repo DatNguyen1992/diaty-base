@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { CreateUserUseCase } from './application/use-cases/create-user.usecase';
 import { GetUserUseCase } from './application/use-cases/get-user.usecase';
@@ -32,6 +33,12 @@ export class UserController {
   @Post()
   create(@Body() createDto: CreateUserDto) {
     return this.createUserUseCase.execute(createDto);
+  }
+
+  @Get('me')
+  async me(@Req() req: any) {
+    const { userId } = req.user;
+    return this.getUserUseCase.execute(userId);
   }
 
   @Get(':id')

@@ -290,8 +290,36 @@ export class AuthService {
       from: '"TripleDevs Studio" <noreply@tripledevstudio.com>',
       to: email,
       subject: 'Reset your password',
-      html: `<p>Your 6-digit OTP to reset password is: <strong>${otp}</strong></p>
-             <p>This code will expire in 5 minutes.</p>`,
+      html: `<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa; padding: 20px; font-family: Helvetica, Arial, sans-serif;">
+              <tr>
+                  <td align="center">
+                      <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                          <tr>
+                              <td style="font-size: 24px; font-weight: bold; color: #333333; text-align: center; padding-bottom: 20px;">
+                                  Security Verification Code
+                              </td>
+                          </tr>
+                          <tr>
+                              <td style="font-size: 16px; color: #666666; line-height: 1.5; text-align: center; padding-bottom: 30px;">
+                                  Please use the following single-use verification code to complete your interaction. Do not share this authentication parameter with anyone.
+                              </td>
+                          </tr>
+                          <tr>
+                              <td align="center" style="padding-bottom: 30px;">
+                                  <span style="font-size: 36px; font-weight: bold; color: #007bff; letter-spacing: 4px; background-color: #e6f2ff; padding: 12px 30px; border-radius: 6px; display: inline-block;">
+                                      ${otp}
+                                  </span>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td style="font-size: 12px; color: #999999; text-align: center; border-top: 1px solid #eeeeee; padding-top: 20px;">
+                                  This operational safety metric expires within 10 minutes. If you did not issue this verification request, disregard this message.
+                              </td>
+                          </tr>
+                      </table>
+                  </td>
+              </tr>
+          </table>`,
     });
   }
 
